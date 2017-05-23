@@ -79,7 +79,7 @@ class SendPlayerFaceTask extends AsyncTask {
     private $player;
     private $skindata;
 
-	public function __construct(string $player, string $skindata, array $messages)
+    public function __construct(string $player, string $skindata, array $messages)
     {
         $this->messages = (array) $messages;
         $this->player = $player;
