@@ -90,7 +90,7 @@ class SendPlayerFaceTask extends AsyncTask {
     {
         $differenceList = [];
         foreach(self::TEXTFORMAT_RGB as $value){
-            $difference = sqrt(pow($r - $value[0],2) + pow($g - $value[1],2) + pow($b - $value[2],2));
+            $difference = pow($r - $value[0],2) + pow($g - $value[1],2) + pow($b - $value[2],2);
             $differenceList[] = $difference;
         }
         $smallest = min($differenceList);
