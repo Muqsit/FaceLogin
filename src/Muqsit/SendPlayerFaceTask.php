@@ -116,6 +116,27 @@ class SendPlayerFaceTask extends AsyncTask {
                 $strArray[$y] .= $format.$symbol;
             }
         }
+        
+        for($y = 0; $y < 8; ++$y){
+			for($x = 33; $x < 41; ++$x){
+				if(!isset($strArray[$y])){
+					$strArray[$y] = "";
+				}
+				$key = ((64 * $y) + 8 + $x) * 4;
+				$r = ord($skin{$key});
+				$g = ord($skin{$key + 1});
+				$b = ord($skin{$key + 2});
+				$a = ord($skin{$key + 3});
+
+				if($a >= 127){ // full opacity is 255
+					$format = $this->rgbToTextFormat($r, $g, $b);
+					$tmp = explode($symbol, $strArray[$y]);
+					$tmp[$x - 33] = $format;
+					$strArray[$y] = implode($symbol, $tmp);
+				}
+			}
+		}
+        
         foreach($this->messages as $k => $v){
             $strArray[$k - 1] = $strArray[$k - 1]." ".str_replace("{NAME}", $this->player, $v);
         }
