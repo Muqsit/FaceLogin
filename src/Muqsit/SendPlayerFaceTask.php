@@ -115,7 +115,7 @@ class SendPlayerFaceTask extends AsyncTask {
 			$key2 = ((64 * $y) + 8 + $x + 32) * 4;
 			$a = ord($skin{$key2 + 3});
 
-			if($a >= 127){ // if layer 2 pixel is transparent enough, use it instead.
+			if($a >= 127){ // if layer 2 pixel is opaque enough, use it instead.
 				$r = ord($skin{$key2});
 				$g = ord($skin{$key2 + 1});
 				$b = ord($skin{$key2 + 2});
