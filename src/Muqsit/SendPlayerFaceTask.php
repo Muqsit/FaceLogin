@@ -103,19 +103,33 @@ class SendPlayerFaceTask extends AsyncTask {
         $symbol = hex2bin(self::HEX_SYMBOL);
         $strArray = [];
         $skin = substr($this->skindata, ($pos = (64 * 8 * 4)) - 4, $pos);
-        for($y = 0; $y < 8; ++$y){
-            for($x = 1; $x < 9; ++$x){
-                if(!isset($strArray[$y])){
-                    $strArray[$y] = "";
-                }
-                $key = ((64 * $y) + 8 + $x) * 4;
-                $r = ord($skin{$key});
-                $g = ord($skin{$key + 1});
-                $b = ord($skin{$key + 2});
-                $format = $this->rgbToTextFormat($r, $g, $b);
-                $strArray[$y] .= $format.$symbol;
-            }
-        }
+	for($y = 0; $y < 8; ++$y){
+		for($x = 1; $x < 9; ++$x){
+			if(!isset($strArray[$y])){
+				$strArray[$y] = "";
+			}
+			// layer 1
+			$key = ((64 * $y) + 8 + $x) * 4;
+
+			// layer 2
+			$key2 = ((64 * $y) + 8 + $x + 32) * 4;
+			$a = ord($skin{$key2 + 3});
+
+			if($a >= 127){ // if layer 2 pixel is opaque enough, use it instead.
+				$r = ord($skin{$key2});
+				$g = ord($skin{$key2 + 1});
+				$b = ord($skin{$key2 + 2});
+			} else {
+				$r = ord($skin{$key});
+				$g = ord($skin{$key + 1});
+				$b = ord($skin{$key + 2});
+			}
+
+			$format = $this->rgbToTextFormat($r, $g, $b);
+			$strArray[$y] .= $format . $symbol;
+		}
+	}
+        
         foreach($this->messages as $k => $v){
             $strArray[$k - 1] = $strArray[$k - 1]." ".str_replace("{NAME}", $this->player, $v);
         }
