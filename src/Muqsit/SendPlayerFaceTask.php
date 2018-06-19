@@ -109,14 +109,14 @@ class SendPlayerFaceTask extends AsyncTask {
                 $maxX = $maxY = 8;
 
                 $width = 64;
-                $layer2Offset = 32;
+                $uv = 32;
                 break;
 
             case 65536:
                 $maxX = $maxY = 16;
 
                 $width = 128;
-                $layer2Offset = 64;
+                $uv = 64;
         }
 
         $skin = substr($this->skindata, ($pos = ($width * $maxX * 4)) - 4, $pos);
@@ -130,7 +130,7 @@ class SendPlayerFaceTask extends AsyncTask {
 			$key = (($width * $y) + $maxX + $x) * 4;
 
 			// layer 2
-			$key2 = (($width * $y) + $maxX + $x + $layer2Offset) * 4;
+			$key2 = (($width * $y) + $maxX + $x + $uv) * 4;
 			$a = ord($skin{$key2 + 3});
 
 			if($a >= 127){ // if layer 2 pixel is opaque enough, use it instead.
