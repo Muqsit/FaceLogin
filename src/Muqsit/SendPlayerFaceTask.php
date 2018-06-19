@@ -102,17 +102,35 @@ class SendPlayerFaceTask extends AsyncTask {
     {
         $symbol = hex2bin(self::HEX_SYMBOL);
         $strArray = [];
-        $skin = substr($this->skindata, ($pos = (64 * 8 * 4)) - 4, $pos);
-	for($y = 0; $y < 8; ++$y){
-		for($x = 1; $x < 9; ++$x){
+
+        switch(strlen($this->skindata)){
+            case 8192:
+            case 16384:
+                $maxX = $maxY = 8;
+
+                $width = 64;
+                $layer2Offset = 32;
+                break;
+
+            case 65536:
+                $maxX = $maxY = 16;
+
+                $width = 128;
+                $layer2Offset = 64;
+        }
+
+        $skin = substr($this->skindata, ($pos = ($width * $maxX * 4)) - 4, $pos);
+
+	for($y = 0; $y < $maxY; ++$y){
+		for($x = 1; $x < $maxX + 1; ++$x){
 			if(!isset($strArray[$y])){
 				$strArray[$y] = "";
 			}
 			// layer 1
-			$key = ((64 * $y) + 8 + $x) * 4;
+			$key = (($width * $y) + $maxX + $x) * 4;
 
 			// layer 2
-			$key2 = ((64 * $y) + 8 + $x + 32) * 4;
+			$key2 = (($width * $y) + $maxX + $x + $layer2Offset) * 4;
 			$a = ord($skin{$key2 + 3});
 
 			if($a >= 127){ // if layer 2 pixel is opaque enough, use it instead.
