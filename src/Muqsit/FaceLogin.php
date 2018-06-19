@@ -3,7 +3,7 @@
 *
 * Copyright (C) 2017 Muqsit Rayyan
 *
-*    ___                __             _  
+*    ___                __             _
 *   / __\_ _  ___ ___  / /  ___   __ _(_)_ __
 *  / _\/ _` |/ __/ _ \/ /  / _ \ / _` | | '_ \
 * / / | (_| | (_|  __/ /__| (_) | (_| | | | | |
@@ -68,7 +68,7 @@ class FaceLogin extends PluginBase implements Listener {
 
     public function sendFace(Player $player, array $messages = null)
     {
-        $this->getServer()->getScheduler()->scheduleAsyncTask(new SendPlayerFaceTask($player->getName(), $player->getSkinData(), $messages ?? $this->messages));
+        $this->getServer()->getAsyncPool()->submitTask(new SendPlayerFaceTask($player->getName(), $player->getSkin()->getSkinData(), $messages ?? $this->messages));
     }
 
     public function onJoin(PlayerJoinEvent $event)

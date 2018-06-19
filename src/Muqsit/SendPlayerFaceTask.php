@@ -102,33 +102,51 @@ class SendPlayerFaceTask extends AsyncTask {
     {
         $symbol = hex2bin(self::HEX_SYMBOL);
         $strArray = [];
-        $skin = substr($this->skindata, ($pos = (64 * 8 * 4)) - 4, $pos);
-	for($y = 0; $y < 8; ++$y){
-		for($x = 1; $x < 9; ++$x){
-			if(!isset($strArray[$y])){
-				$strArray[$y] = "";
-			}
-			// layer 1
-			$key = ((64 * $y) + 8 + $x) * 4;
 
-			// layer 2
-			$key2 = ((64 * $y) + 8 + $x + 32) * 4;
-			$a = ord($skin{$key2 + 3});
+        switch(strlen($this->skindata)){
+            case 8192:
+            case 16384:
+                $maxX = $maxY = 8;
 
-			if($a >= 127){ // if layer 2 pixel is opaque enough, use it instead.
-				$r = ord($skin{$key2});
-				$g = ord($skin{$key2 + 1});
-				$b = ord($skin{$key2 + 2});
-			} else {
-				$r = ord($skin{$key});
-				$g = ord($skin{$key + 1});
-				$b = ord($skin{$key + 2});
-			}
+                $width = 64;
+                $uv = 32;
+                break;
 
-			$format = $this->rgbToTextFormat($r, $g, $b);
-			$strArray[$y] .= $format . $symbol;
-		}
-	}
+            case 65536:
+                $maxX = $maxY = 16;
+
+                $width = 128;
+                $uv = 64;
+        }
+
+        $skin = substr($this->skindata, ($pos = ($width * $maxX * 4)) - 4, $pos);
+
+        for($y = 0; $y < $maxY; ++$y){
+            for($x = 1; $x < $maxX + 1; ++$x){
+                if(!isset($strArray[$y])){
+                    $strArray[$y] = "";
+                }
+                // layer 1
+                $key = (($width * $y) + $maxX + $x) * 4;
+
+                // layer 2
+                $key2 = (($width * $y) + $maxX + $x + $uv) * 4;
+                $a = ord($skin{$key2 + 3});
+
+                if($a >= 127){ // if layer 2 pixel is opaque enough, use it instead.
+                    $r = ord($skin{$key2});
+                    $g = ord($skin{$key2 + 1});
+                    $b = ord($skin{$key2 + 2});
+                } else {
+                    $r = ord($skin{$key});
+                    $g = ord($skin{$key + 1});
+                    $b = ord($skin{$key + 2});
+                }
+
+                $format = $this->rgbToTextFormat($r, $g, $b);
+                $strArray[$y] .= $format . $symbol;
+            }
+        }
         
         foreach($this->messages as $k => $v){
             $strArray[$k - 1] = $strArray[$k - 1]." ".str_replace("{NAME}", $this->player, $v);
