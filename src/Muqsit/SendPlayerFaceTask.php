@@ -121,32 +121,32 @@ class SendPlayerFaceTask extends AsyncTask {
 
         $skin = substr($this->skindata, ($pos = ($width * $maxX * 4)) - 4, $pos);
 
-	for($y = 0; $y < $maxY; ++$y){
-		for($x = 1; $x < $maxX + 1; ++$x){
-			if(!isset($strArray[$y])){
-				$strArray[$y] = "";
-			}
-			// layer 1
-			$key = (($width * $y) + $maxX + $x) * 4;
+        for($y = 0; $y < $maxY; ++$y){
+            for($x = 1; $x < $maxX + 1; ++$x){
+                if(!isset($strArray[$y])){
+                    $strArray[$y] = "";
+                }
+                // layer 1
+                $key = (($width * $y) + $maxX + $x) * 4;
 
-			// layer 2
-			$key2 = (($width * $y) + $maxX + $x + $uv) * 4;
-			$a = ord($skin{$key2 + 3});
+                // layer 2
+                $key2 = (($width * $y) + $maxX + $x + $uv) * 4;
+                $a = ord($skin{$key2 + 3});
 
-			if($a >= 127){ // if layer 2 pixel is opaque enough, use it instead.
-				$r = ord($skin{$key2});
-				$g = ord($skin{$key2 + 1});
-				$b = ord($skin{$key2 + 2});
-			} else {
-				$r = ord($skin{$key});
-				$g = ord($skin{$key + 1});
-				$b = ord($skin{$key + 2});
-			}
+                if($a >= 127){ // if layer 2 pixel is opaque enough, use it instead.
+                    $r = ord($skin{$key2});
+                    $g = ord($skin{$key2 + 1});
+                    $b = ord($skin{$key2 + 2});
+                } else {
+                    $r = ord($skin{$key});
+                    $g = ord($skin{$key + 1});
+                    $b = ord($skin{$key + 2});
+                }
 
-			$format = $this->rgbToTextFormat($r, $g, $b);
-			$strArray[$y] .= $format . $symbol;
-		}
-	}
+                $format = $this->rgbToTextFormat($r, $g, $b);
+                $strArray[$y] .= $format . $symbol;
+            }
+        }
         
         foreach($this->messages as $k => $v){
             $strArray[$k - 1] = $strArray[$k - 1]." ".str_replace("{NAME}", $this->player, $v);
