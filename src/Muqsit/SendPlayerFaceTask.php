@@ -3,7 +3,7 @@
 *
 * Copyright (C) 2017 Muqsit Rayyan
 *
-*    ___                __             _  
+*    ___                __             _
 *   / __\_ _  ___ ___  / /  ___   __ _(_)_ __
 *  / _\/ _` |/ __/ _ \/ /  / _ \ / _` | | '_ \
 * / / | (_| | (_|  __/ /__| (_) | (_| | | | | |
@@ -20,144 +20,61 @@
 * Twiter: http://twitter.com/muqsitrayyan
 * GitHub: http://github.com/Muqsit
 *
-* Almost everything in this class belongs to Legoboy0215
-* Twitter: http://twitter.com/Legoboy0215
-* GitHub: http://github.com/legoboy0215
-*
-* Source: http://gist.github.com/legoboy0215/43282a636844bb0d1accbc91c3fc43f6
-*
 */
 namespace Muqsit;
 
-use pocketmine\Server;
-use pocketmine\scheduler\AsyncTask;
-use pocketmine\utils\TextFormat;
+use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\plugin\PluginBase;
+use pocketmine\player\Player;
 
-class SendPlayerFaceTask extends AsyncTask {
+class FaceLogin extends PluginBase implements Listener {
 
-    const HEX_SYMBOL = "e29688";
+    private $messages = [];
 
-    const TEXTFORMAT_RGB = [
-        [0, 0, 0],
-        [0, 0, 170],
-        [0, 170, 0],
-        [0, 170, 170],
-        [170, 0, 0],
-        [170, 0, 170],
-        [255, 170, 0],
-        [170, 170, 170],
-        [85, 85, 85],
-        [85, 85, 255],
-        [85, 255, 85],
-        [85, 255, 255],
-        [255, 85, 85],
-        [255, 85, 255],
-        [255, 255, 85],
-        [255, 255, 255]
-    ];
-
-    const TEXTFORMAT_LIST = [
-        TextFormat::BLACK,
-        TextFormat::DARK_BLUE,
-        TextFormat::DARK_GREEN,
-        TextFormat::DARK_AQUA,
-        TextFormat::DARK_RED,
-        TextFormat::DARK_PURPLE,
-        TextFormat::GOLD,
-        TextFormat::GRAY,
-        TextFormat::DARK_GRAY,
-        TextFormat::BLUE,
-        TextFormat::GREEN,
-        TextFormat::AQUA,
-        TextFormat::RED,
-        TextFormat::LIGHT_PURPLE,
-        TextFormat::YELLOW,
-        TextFormat::WHITE
-    ];
-
-    private $messages;
-    private $player;
-    private $skindata;
-
-    public function __construct(string $player, string $skindata, array $messages)
+    public function onEnable(): void
     {
-        $this->messages = (array) $messages;
-        $this->player = $player;
-        $this->skindata = $skindata;
-    }
-
-    private function rgbToTextFormat($r, $g, $b)
-    {
-        $differenceList = [];
-        foreach(self::TEXTFORMAT_RGB as $value){
-            $difference = pow($r - $value[0],2) + pow($g - $value[1],2) + pow($b - $value[2],2);
-            $differenceList[] = $difference;
+        $this->getServer()->getPluginManager()->registerEvents($this, $this);
+        if(!is_dir($dir = $this->getDataFolder())){
+            mkdir($dir);
         }
-        $smallest = min($differenceList);
-        $key = array_search($smallest, $differenceList);
-        return self::TEXTFORMAT_LIST[$key];
-    }
-
-    public function onRun()
-    {
-        $symbol = hex2bin(self::HEX_SYMBOL);
-        $strArray = [];
-
-        switch(strlen($this->skindata)){
-            case 8192:
-            case 16384:
-                $maxX = $maxY = 8;
-
-                $width = 64;
-                $uv = 32;
-                break;
-
-            case 65536:
-                $maxX = $maxY = 16;
-
-                $width = 128;
-                $uv = 64;
+        if(!is_file($dir."messages.yml")){
+            file_put_contents($dir."messages.yml", $this->getResource("messages.yml"));
         }
 
-        $skin = substr($this->skindata, ($pos = ($width * $maxX * 4)) - 4, $pos);
-
-        for($y = 0; $y < $maxY; ++$y){
-            for($x = 1; $x < $maxX + 1; ++$x){
-                if(!isset($strArray[$y])){
-                    $strArray[$y] = "";
+        $messages = [];
+        $data = yaml_parse_file($dir."messages.yml");
+        $switchToDefault = false;
+        if(isset($data["messages"])){
+            $messages = $data["messages"];
+            foreach($messages as $k => $v){
+                if(!is_numeric($k)){
+                    $this->getLogger()->critical("Line number in messages.yml must be an integer, $k given. Switching to default messages.");
+                    $switchToDefault = true;
+                    break;
+                }elseif($k < 1 || $k > 8){
+                    $this->getLogger()->critical("Line number in messages.yml must be an greater than 0 and less than 9, $k given. Switching to default messages.");
+                    $switchToDefault = true;
+                    break;
                 }
-                // layer 1
-                $key = (($width * $y) + $maxX + $x) * 4;
-
-                // layer 2
-                $key2 = (($width * $y) + $maxX + $x + $uv) * 4;
-                $a = ord($skin{$key2 + 3});
-
-                if($a >= 127){ // if layer 2 pixel is opaque enough, use it instead.
-                    $r = ord($skin{$key2});
-                    $g = ord($skin{$key2 + 1});
-                    $b = ord($skin{$key2 + 2});
-                } else {
-                    $r = ord($skin{$key});
-                    $g = ord($skin{$key + 1});
-                    $b = ord($skin{$key + 2});
-                }
-
-                $format = $this->rgbToTextFormat($r, $g, $b);
-                $strArray[$y] .= $format . $symbol;
             }
         }
-        
-        foreach($this->messages as $k => $v){
-            $strArray[$k - 1] = $strArray[$k - 1]." ".str_replace("{NAME}", $this->player, $v);
+        if($switchToDefault){
+            $data = yaml_parse_file($this->getFile()."messages.yml");
+            $messages = $data["messages"];
         }
-        $this->setResult(implode("\n", $strArray));
+        $this->messages = $messages;
     }
 
-    public function onCompletion(Server $server)
+    public function sendFace(Player $player, array $messages = null)
     {
-        if(($player = $server->getPlayerExact($this->player)) !== null){
-            $player->sendMessage($this->getResult());
+        $this->getServer()->getAsyncPool()->submitTask(new SendPlayerFaceTask($player->getName(), $player->getSkin()->getSkinData(), $messages ?? $this->messages));
+    }
+
+    public function onJoin(PlayerJoinEvent $event)
+    {
+        if($event->getPlayer()->hasPermission("facelogin.show")){
+            $this->sendFace($event->getPlayer());
         }
     }
 }
