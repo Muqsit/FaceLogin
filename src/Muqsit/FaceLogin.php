@@ -26,13 +26,13 @@ namespace Muqsit;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\plugin\PluginBase;
-use pocketmine\Player;
+use pocketmine\player\Player;
 
 class FaceLogin extends PluginBase implements Listener {
 
     private $messages = [];
 
-    public function onEnable()
+    public function onEnable(): void
     {
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         if(!is_dir($dir = $this->getDataFolder())){
