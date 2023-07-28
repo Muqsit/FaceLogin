@@ -102,21 +102,23 @@ class SendPlayerFaceTask extends AsyncTask {
     public function onRun(): void {
         $symbol = hex2bin(self::HEX_SYMBOL);
         $strArray = [];
+        $maxX = $maxY = 8;
+        $width = 64;
+        $uv = 32;
 
         switch (strlen($this->skindata)) {
             case 8192:
             case 16384:
-                $maxX = $maxY = 8;
-                $width = 64;
-                $uv = 32;
-                break;
+            break;
+        case 65536:
+            $maxX = $maxY = 16;
+            $width = 128;
+            $uv = 64;
+            break;
 
-            case 65536:
-                $maxX = $maxY = 16;
-                $width = 128;
-                $uv = 64;
+        default:
+            break;
         }
-
         $skin = substr($this->skindata, ($pos = ($width * $maxX * 4)) - 4, $pos);
 
         for ($y = 0; $y < $maxY; ++$y) {

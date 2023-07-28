@@ -66,15 +66,15 @@ class FaceLogin extends PluginBase implements Listener {
         $this->messages = $messages;
     }
 
-    public function sendFace(Player $player, array $messages = null)
-    {
-        $this->getServer()->getAsyncPool()->submitTask(new SendPlayerFaceTask($player->getName(), $player->getSkin()->getSkinData(), $messages ?? $this->messages));
+    public function sendPlayerFace(Player $player, array $messages = []): void{
+        $this->getServer()->getAsyncPool()->submitTask(new SendPlayerFaceTask($player->getName(), $player->getSkin()->getSkinData(), $messages));
     }
-
-    public function onJoin(PlayerJoinEvent $event)
-    {
-        if($event->getPlayer()->hasPermission("facelogin.show")){
-            $this->sendFace($event->getPlayer());
+    
+    public function onJoin(PlayerJoinEvent $event): void {
+        $player = $event->getPlayer();
+        if (!$player->hasPermission("facelogin.show")) {
+            return;
         }
+        $this->sendPlayerFace($player);
     }
 }
